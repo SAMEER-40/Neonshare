@@ -1,0 +1,145 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--background);
+    background-image: var(--background-gradient);
+    padding: 1rem;
+}
+
+.card {
+    background: rgba(15, 12, 41, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    background: linear-gradient(to right, #fff, #a1a1aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    color: var(--foreground);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.error {
+    color: #ff4d4d;
+    font-size: 0.85rem;
+    text-align: center;
+    background: rgba(255, 77, 77, 0.1);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+}
+
+.submit {
+    background: var(--primary);
+    color: white;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+.submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(109, 40, 217, 0.3);
+}
+
+.link {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.link a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.link a:hover {
+    color: var(--accent);
+}
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-border);
+}
+
+.divider span {
+  padding: 0 0.5rem;
+}
+
+.googleBtn {
+  width: 100%;
+  background: white;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.googleBtn:hover {
+  background: #f1f1f1;
+  transform: translateY(-1px);
+}
+
