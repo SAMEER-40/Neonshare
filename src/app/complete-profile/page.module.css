@@ -1,0 +1,92 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--background);
+    background-image: var(--background-gradient);
+    padding: 1rem;
+}
+
+.card {
+    background: rgba(15, 12, 41, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: var(--foreground);
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    color: var(--foreground);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.error {
+    color: #ff4d4d;
+    font-size: 0.85rem;
+    text-align: center;
+    background: rgba(255, 77, 77, 0.1);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+}
+
+.submit {
+    background: var(--primary);
+    color: white;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+.submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
