@@ -1,0 +1,69 @@
+/* PhotoSkeleton styles */
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    composes: shimmer;
+}
+
+.info {
+    padding: 1rem;
+}
+
+.meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.uploader {
+    width: 80px;
+    height: 14px;
+    border-radius: 7px;
+    composes: shimmer;
+}
+
+.date {
+    width: 60px;
+    height: 14px;
+    border-radius: 7px;
+    composes: shimmer;
+}
+
+.tags {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tag {
+    width: 50px;
+    height: 20px;
+    border-radius: 10px;
+    composes: shimmer;
+}

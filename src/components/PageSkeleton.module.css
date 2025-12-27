@@ -1,0 +1,107 @@
+/* PageSkeleton styles with shimmer animation */
+
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.03) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.03) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    width: 120px;
+    height: 32px;
+    border-radius: 4px;
+    composes: shimmer;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.pill {
+    width: 80px;
+    height: 28px;
+    border-radius: 14px;
+    composes: shimmer;
+}
+
+.content {
+    padding: 2rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    composes: shimmer;
+}
+
+.meta {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.line {
+    height: 12px;
+    width: 60%;
+    border-radius: 6px;
+    composes: shimmer;
+}
+
+.lineShort {
+    height: 12px;
+    width: 40%;
+    border-radius: 6px;
+    composes: shimmer;
+}
