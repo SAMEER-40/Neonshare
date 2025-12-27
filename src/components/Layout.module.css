@@ -1,3 +1,5 @@
+/* Layout styles */
+
 .container {
     min-height: 100vh;
     display: flex;
@@ -9,9 +11,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background: rgba(15, 12, 41, 0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-subtle);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -19,46 +21,82 @@
 
 .logo {
     font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--foreground);
-    letter-spacing: -0.02em;
-    background: linear-gradient(to right, #fff, #a1a1aa);
+    font-weight: bold;
+    background: linear-gradient(90deg, var(--accent), #ff00ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    transition: transform var(--transition-fast);
+}
+
+.logo:hover {
+    transform: scale(1.02);
+    opacity: 1;
 }
 
 .controls {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    color: var(--text-secondary);
+    gap: 1.5rem;
 }
 
-.controls strong {
-    color: var(--primary);
+.navLink {
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+    font-weight: 500;
+}
+
+.navLink:hover {
+    color: var(--accent);
+    opacity: 1;
+}
+
+.username {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.username strong {
+    color: var(--text-primary);
 }
 
 .logoutBtn {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
     padding: 0.5rem 1rem;
-    border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--card-border);
-    color: var(--foreground);
-    font-size: 0.85rem;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
 }
 
 .logoutBtn:hover {
-    background: rgba(255, 77, 77, 0.2);
-    border-color: #ff4d4d;
-    color: #ff4d4d;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 217, 255, 0.1);
 }
 
 .main {
     flex: 1;
     padding: 2rem;
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .controls {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .main {
+        padding: 1rem;
+    }
 }

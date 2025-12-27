@@ -4,33 +4,39 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
-import { useUser } from '@/lib/useUser';
+import { useAuthActions } from '@/lib/AuthProvider';
 
 export default function LoginPage() {
-    const { login, loginWithGoogle } = useUser();
+    const { login, loginWithGoogle } = useAuthActions();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
         if (await login(username, password)) {
             router.push('/');
         } else {
             setError('Invalid username or password');
+            setIsLoading(false);
         }
     };
 
     const handleGoogleLogin = async () => {
+        setIsLoading(true);
         if (await loginWithGoogle()) {
-            // Check if we need to complete profile (if pending auth exists)
             if (localStorage.getItem('photo_share_pending_google_auth')) {
                 router.push('/complete-profile');
             } else {
                 router.push('/');
             }
+        } else {
+            setIsLoading(false);
         }
     };
 
@@ -52,6 +58,7 @@ export default function LoginPage() {
                             className={styles.input}
                             placeholder="Enter your username"
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -64,11 +71,12 @@ export default function LoginPage() {
                             className={styles.input}
                             placeholder="Enter your password"
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
-                    <button type="submit" className={styles.submit}>
-                        Login
+                    <button type="submit" className={styles.submit} disabled={isLoading}>
+                        {isLoading ? <span className="loading-spinner" /> : 'Login'}
                     </button>
                 </form>
 
@@ -76,7 +84,11 @@ export default function LoginPage() {
                     <span>OR</span>
                 </div>
 
-                <button onClick={handleGoogleLogin} className={styles.googleBtn}>
+                <button
+                    onClick={handleGoogleLogin}
+                    className={styles.googleBtn}
+                    disabled={isLoading}
+                >
                     <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                         <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
                         <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
@@ -87,7 +99,7 @@ export default function LoginPage() {
                 </button>
 
                 <p className={styles.footer}>
-                    Don't have an account? <a href="/register">Sign up</a>
+                    Don't have an account? <Link href="/register">Sign up</Link>
                 </p>
             </div>
         </div>

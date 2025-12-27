@@ -2,8 +2,9 @@
 
 import React, { useState, useRef } from 'react';
 import styles from './UploadModal.module.css';
-import { storage } from '@/lib/storage';
-import { useUser } from '@/lib/useUser';
+import { uploadImage, UploadProgress } from '@/lib/data/media.store';
+import { useAuthStatus } from '@/lib/AuthProvider';
+import { useToast } from './ToastManager';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -12,10 +13,12 @@ interface UploadModalProps {
 }
 
 export default function UploadModal({ isOpen, onClose, onUploadComplete }: UploadModalProps) {
-    const { user, friends } = useUser();
+    const { user, friends } = useAuthStatus();
+    const { showToast } = useToast();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (!isOpen) return null;
@@ -23,6 +26,19 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showToast({ type: 'error', message: 'Invalid file type. Use JPEG, PNG, GIF, or WebP.' });
+                return;
+            }
+
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                showToast({ type: 'error', message: 'File too large. Maximum size is 10MB.' });
+                return;
+            }
+
             setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -44,6 +60,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
         setSelectedFile(null);
         setPreviewUrl(null);
         setSelectedTags([]);
+        setUploadProgress(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -52,24 +69,38 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
     const handleUpload = async () => {
         if (!selectedFile || !user) return;
 
-        // Create a fake URL for the file (in a real app, upload to storage)
-        const fakeUrl = URL.createObjectURL(selectedFile);
+        try {
+            await uploadImage(
+                selectedFile,
+                user,
+                selectedTags,
+                (progress) => {
+                    setUploadProgress(progress);
+                }
+            );
 
-        const newPhoto = {
-            id: Date.now().toString(),
-            url: fakeUrl,
-            uploader: user,
-            tags: selectedTags,
-            timestamp: Date.now()
-        };
-
-        await storage.savePhoto(newPhoto);
-        onUploadComplete();
-        resetForm();
+            showToast({ type: 'success', message: 'Photo uploaded successfully!' });
+            onUploadComplete();
+            resetForm();
+        } catch (error: any) {
+            showToast({ type: 'error', message: error.message || 'Upload failed' });
+            setUploadProgress(null);
+        }
     };
 
+    const handleClose = () => {
+        if (uploadProgress?.state === 'uploading') {
+            showToast({ type: 'warning', message: 'Upload in progress. Please wait.' });
+            return;
+        }
+        resetForm();
+        onClose();
+    };
+
+    const isUploading = uploadProgress?.state === 'uploading';
+
     return (
-        <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.overlay} onClick={handleClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <h2 className={styles.title}>Share a Photo</h2>
 
@@ -78,55 +109,89 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
                         className={styles.dropzone}
                         onClick={() => fileInputRef.current?.click()}
                     >
+                        <div className={styles.dropzoneIcon}>📷</div>
                         <p>Click to select a photo</p>
+                        <span className={styles.dropzoneHint}>JPEG, PNG, GIF, WebP • Max 10MB</span>
                         <input
                             type="file"
                             ref={fileInputRef}
                             onChange={handleFileSelect}
-                            accept="image/*"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
                             hidden
                         />
                     </div>
                 ) : (
-                    <div>
+                    <div className={styles.previewContainer}>
                         <img src={previewUrl} alt="Preview" className={styles.preview} />
-                        <button
-                            className={styles.cancel}
-                            onClick={() => {
-                                setPreviewUrl(null);
-                                setSelectedFile(null);
-                            }}
-                            style={{ marginBottom: '1rem', width: '100%' }}
-                        >
-                            Change Photo
-                        </button>
+                        {!isUploading && (
+                            <button
+                                className={styles.changeBtn}
+                                onClick={() => {
+                                    setPreviewUrl(null);
+                                    setSelectedFile(null);
+                                }}
+                            >
+                                Change Photo
+                            </button>
+                        )}
+
+                        {/* Upload progress bar */}
+                        {isUploading && (
+                            <div className={styles.progressContainer}>
+                                <div
+                                    className={styles.progressBar}
+                                    style={{ width: `${uploadProgress.progress}%` }}
+                                />
+                                <span className={styles.progressText}>
+                                    Uploading... {Math.round(uploadProgress.progress)}%
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <div className={styles.field}>
-                    <label className={styles.label}>Tag Friends (Only friends can be tagged)</label>
+                    <label className={styles.label}>Tag Friends</label>
                     <div className={styles.tagsContainer}>
-                        {friends.length === 0 && <p style={{ color: '#666', fontSize: '0.8rem' }}>You have no friends yet. Add some in the Friends page!</p>}
-                        {friends.map(u => (
-                            <button
-                                key={u}
-                                className={`${styles.tagChip} ${selectedTags.includes(u) ? styles.selected : ''}`}
-                                onClick={() => toggleTag(u)}
-                            >
-                                @{u}
-                            </button>
-                        ))}
+                        {friends.length === 0 ? (
+                            <p className={styles.noFriends}>
+                                No friends yet. Add some in the Friends page!
+                            </p>
+                        ) : (
+                            friends.map(u => (
+                                <button
+                                    key={u}
+                                    className={`${styles.tagChip} ${selectedTags.includes(u) ? styles.selected : ''}`}
+                                    onClick={() => toggleTag(u)}
+                                    disabled={isUploading}
+                                >
+                                    @{u}
+                                </button>
+                            ))
+                        )}
                     </div>
                 </div>
 
                 <div className={styles.actions}>
-                    <button className={styles.cancel} onClick={onClose}>Cancel</button>
+                    <button
+                        className={styles.cancel}
+                        onClick={handleClose}
+                        disabled={isUploading}
+                    >
+                        Cancel
+                    </button>
                     <button
                         className={styles.submit}
                         onClick={handleUpload}
-                        disabled={!selectedFile}
+                        disabled={!selectedFile || isUploading}
                     >
-                        Upload
+                        {isUploading ? (
+                            <span className={styles.uploadingText}>
+                                <span className="loading-spinner" /> Uploading...
+                            </span>
+                        ) : (
+                            'Upload'
+                        )}
                     </button>
                 </div>
             </div>

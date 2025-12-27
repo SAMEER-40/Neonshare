@@ -1,30 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import PhotoFeed from '@/components/PhotoFeed';
 import UploadModal from '@/components/UploadModal';
 import styles from './page.module.css';
-import { useUser } from '@/lib/useUser';
+import { useAuthStatus } from '@/lib/AuthProvider';
+import PageSkeleton from '@/components/PageSkeleton';
 
 export default function Home() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const { user, isAuthenticated } = useUser();
+  const { user, authStatus } = useAuthStatus();
   const router = useRouter();
 
-  useEffect(() => {
-    // Check auth after initial load to avoid hydration mismatch
-    // In a real app we'd use middleware or server components
-    const timer = setTimeout(() => {
-      if (!isAuthenticated && !localStorage.getItem('photo_share_current_user')) {
-        router.push('/login');
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, router]);
+  // Show skeleton while checking auth (non-blocking)
+  if (authStatus === 'loading') {
+    return <PageSkeleton />;
+  }
 
-  if (!user) return null; // Prevent flash of content
+  // Redirect if not authenticated
+  if (authStatus === 'unauthenticated') {
+    router.push('/login');
+    return <PageSkeleton />;
+  }
 
   return (
     <Layout>
@@ -44,7 +43,6 @@ export default function Home() {
           onClose={() => setIsUploadOpen(false)}
           onUploadComplete={() => {
             setIsUploadOpen(false);
-            // Feed will auto-refresh due to event listener in PhotoFeed
           }}
         />
       </div>

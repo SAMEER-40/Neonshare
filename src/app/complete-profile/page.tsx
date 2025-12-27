@@ -3,14 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
-import { useUser } from '@/lib/useUser';
-import { storage } from '@/lib/storage';
+import { useAuthStatus } from '@/lib/AuthProvider';
+import { registerUser, User } from '@/lib/data/user.store';
 
 export default function CompleteProfilePage() {
     const [username, setUsername] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const { register, user } = useUser();
+    const { user } = useAuthStatus();
 
     useEffect(() => {
         // If already logged in with a full account, redirect home
@@ -35,24 +36,25 @@ export default function CompleteProfilePage() {
             return;
         }
 
+        setIsLoading(true);
         const pendingAuth = JSON.parse(pendingAuthJson);
 
         // Register with googleId
-        const newUser = {
+        const newUser: User = {
             username,
             friends: [],
             googleId: pendingAuth.uid
         };
 
-        const result = await storage.registerUser(newUser);
+        const result = await registerUser(newUser);
         if (result.success) {
-            storage.setCurrentUser(username);
+            localStorage.setItem('photo_share_current_user', username);
             localStorage.removeItem('photo_share_pending_google_auth');
-            // Trigger user change event
             window.dispatchEvent(new Event('userChanged'));
             router.push('/');
         } else {
             setError(result.message || 'Registration failed');
+            setIsLoading(false);
         }
     };
 
@@ -74,11 +76,12 @@ export default function CompleteProfilePage() {
                             className={styles.input}
                             placeholder="e.g. neon_rider"
                             required
+                            disabled={isLoading}
                         />
                     </div>
 
-                    <button type="submit" className={styles.submit}>
-                        Complete Profile
+                    <button type="submit" className={styles.submit} disabled={isLoading}>
+                        {isLoading ? <span className="loading-spinner" /> : 'Complete Profile'}
                     </button>
                 </form>
             </div>
