@@ -1,0 +1,45 @@
+/* ErrorBoundary styles */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    color: var(--text-primary, #fff);
+    margin-bottom: 0.5rem;
+}
+
+.message {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+
+.retryBtn {
+    background: linear-gradient(135deg, var(--accent, #00d9ff), #0099cc);
+    border: none;
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.retryBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 217, 255, 0.3);
+}
