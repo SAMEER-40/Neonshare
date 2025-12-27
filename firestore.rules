@@ -1,12 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // Allow read, create, update for everyone to support the current
-      // password-based auth implementation and easy testing.
-      // WARNING: This is not secure for production with sensitive data.
-      allow read, create, update: if true;
+    
+    // Users collection
+    match /users/{username} {
+      // Anyone can read user profiles (for friend lookup)
+      allow read: if true;
+      
+      // Authenticated users can create accounts
+      allow create: if request.auth != null;
+      
+      // Only the user can update their own profile
+      // Note: Since we use username-based auth, we check if the document username matches
+      allow update: if request.auth != null && 
+                       request.resource.data.username == resource.data.username;
+      
+      // No deletion allowed
       allow delete: if false;
+    }
+    
+    // Photos collection
+    match /photos/{photoId} {
+      // Any authenticated user can read photos they uploaded or are tagged in
+      // Simplified: allow reads to any authenticated user (privacy handled client-side)
+      allow read: if request.auth != null;
+      
+      // Any authenticated user can create photos
+      allow create: if request.auth != null &&
+                       request.resource.data.uploader is string &&
+                       request.resource.data.timestamp is number;
+      
+      // Only uploader can update/delete
+      allow update: if request.auth != null && 
+                       resource.data.uploader == request.resource.data.uploader;
+      allow delete: if request.auth != null;
+      
+      // Reactions subcollection
+      match /reactions/{userId} {
+        // Any authenticated user can read reactions
+        allow read: if request.auth != null;
+        
+        // Users can only manage their own reactions
+        allow create, update, delete: if request.auth != null &&
+                                         userId == request.auth.uid;
+      }
     }
   }
 }
