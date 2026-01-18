@@ -36,13 +36,29 @@ service cloud.firestore {
       allow delete: if request.auth != null;
       
       // Reactions subcollection
-      match /reactions/{userId} {
+      match /reactions/{reactionId} {
         // Any authenticated user can read reactions
         allow read: if request.auth != null;
         
-        // Users can only manage their own reactions
-        allow create, update, delete: if request.auth != null &&
-                                         userId == request.auth.uid;
+        // Any authenticated user can create/delete reactions
+        // Note: Using custom username auth, so we can't enforce userId check
+        allow create, update, delete: if request.auth != null;
+      }
+      
+      // Comments subcollection
+      match /comments/{commentId} {
+        // Any authenticated user can read comments
+        allow read: if request.auth != null;
+        
+        // Any authenticated user can create comments
+        allow create: if request.auth != null &&
+                        request.resource.data.userId is string &&
+                        request.resource.data.text is string &&
+                        request.resource.data.timestamp is number;
+        
+        // Users can only delete their own comments
+        allow delete: if request.auth != null &&
+                        resource.data.userId == request.auth.token.name;
       }
     }
   }

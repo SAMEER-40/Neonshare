@@ -21,28 +21,30 @@ const userReactionsCache = new Map<string, Set<string>>(); // userId -> Set of p
  * Toggle like on a photo
  */
 export async function toggleLike(photoId: string, userId: string): Promise<boolean> {
-    const reactionId = `${photoId}_${userId}`;
     const reactionRef = doc(db, 'photos', photoId, 'reactions', userId);
 
     try {
-        // Check if already liked (from cache first)
-        const userReactions = userReactionsCache.get(userId) || new Set();
-        const isLiked = userReactions.has(photoId);
+        // Check if already liked - check Firestore directly for accuracy
+        const { getDoc } = await import('firebase/firestore');
+        const existingDoc = await getDoc(reactionRef);
+        const isLiked = existingDoc.exists();
 
         if (isLiked) {
-            // Unlike
+            // Unlike - remove from Firestore
             await deleteDoc(reactionRef);
+
+            // Update caches
+            const userReactions = userReactionsCache.get(userId) || new Set();
             userReactions.delete(photoId);
             userReactionsCache.set(userId, userReactions);
 
-            // Update count cache
-            const currentCount = reactionCountCache.get(photoId) || 0;
+            const currentCount = reactionCountCache.get(photoId) || 1;
             reactionCountCache.set(photoId, Math.max(0, currentCount - 1));
 
             dispatchReactionEvent(photoId, 'unliked');
             return false; // Not liked anymore
         } else {
-            // Like
+            // Like - add to Firestore
             const reaction: Reaction = {
                 photoId,
                 userId,
@@ -50,10 +52,12 @@ export async function toggleLike(photoId: string, userId: string): Promise<boole
                 createdAt: Date.now()
             };
             await setDoc(reactionRef, reaction);
+
+            // Update caches
+            const userReactions = userReactionsCache.get(userId) || new Set();
             userReactions.add(photoId);
             userReactionsCache.set(userId, userReactions);
 
-            // Update count cache
             const currentCount = reactionCountCache.get(photoId) || 0;
             reactionCountCache.set(photoId, currentCount + 1);
 

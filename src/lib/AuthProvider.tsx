@@ -7,7 +7,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { getUserByUsername, getUserByGoogleId, registerUser, addFriend, clearUserCache, User } from './data/user.store';
+import { getUserByUsername, getUserByGoogleId, registerUser, addFriend, removeFriend, clearUserCache, verifyPassword, User } from './data/user.store';
+import { clearCommentsCache } from './data/comment.store';
+import { clearReactionCache } from './data/reaction.store';
+import { invalidatePhotoCache } from './data/photo.store';
 
 // Types
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
@@ -21,6 +24,7 @@ interface AuthContextValue {
     logout: () => void;
     loginWithGoogle: () => Promise<boolean>;
     addFriend: (targetUsername: string) => Promise<boolean>;
+    removeFriend: (targetUsername: string) => Promise<boolean>;
     refreshFriends: () => Promise<void>;
 }
 
@@ -55,16 +59,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user]);
 
     const login = useCallback(async (username: string, password?: string): Promise<boolean> => {
-        const userData = await getUserByUsername(username);
-        if (userData && (userData.password === password || userData.googleId)) {
-            localStorage.setItem(STORAGE_KEY, username);
-            setUser(username);
-            setAuthStatus('authenticated');
-            setFriends(userData.friends);
-            window.dispatchEvent(new Event('userChanged'));
-            return true;
+        const userData = await getUserByUsername(username.trim().toLowerCase());
+        if (!userData) return false;
+
+        // If user has Google ID only, require Google auth
+        if (userData.googleId && !userData.password) {
+            return false; // Must use Google login
         }
-        return false;
+
+        // Verify password if user has password-based auth
+        if (userData.password && password) {
+            const isValid = await verifyPassword(password, userData.password);
+            if (!isValid) return false;
+        } else if (userData.password && !password) {
+            return false; // Password required but not provided
+        }
+
+        localStorage.setItem(STORAGE_KEY, userData.username);
+        setUser(userData.username);
+        setAuthStatus('authenticated');
+        setFriends(userData.friends);
+        window.dispatchEvent(new Event('userChanged'));
+        return true;
     }, []);
 
     const register = useCallback(async (username: string, password?: string) => {
@@ -85,7 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setAuthStatus('unauthenticated');
         setFriends([]);
+        // Clear all caches
         clearUserCache();
+        clearCommentsCache();
+        clearReactionCache();
+        invalidatePhotoCache();
         window.dispatchEvent(new Event('userChanged'));
     }, []);
 
@@ -126,6 +146,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return success;
     }, [user, refreshFriends]);
 
+    const handleRemoveFriend = useCallback(async (targetUsername: string): Promise<boolean> => {
+        if (!user) return false;
+        const success = await removeFriend(user, targetUsername);
+        if (success) await refreshFriends();
+        return success;
+    }, [user, refreshFriends]);
+
     // Memoize context value to prevent unnecessary re-renders
     const value = useMemo(() => ({
         user,
@@ -136,8 +163,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         loginWithGoogle,
         addFriend: handleAddFriend,
+        removeFriend: handleRemoveFriend,
         refreshFriends
-    }), [user, authStatus, friends, login, register, logout, loginWithGoogle, handleAddFriend, refreshFriends]);
+    }), [user, authStatus, friends, login, register, logout, loginWithGoogle, handleAddFriend, handleRemoveFriend, refreshFriends]);
 
     return (
         <AuthContext.Provider value={value}>
@@ -169,6 +197,7 @@ export function useAuthActions() {
         logout: ctx.logout,
         loginWithGoogle: ctx.loginWithGoogle,
         addFriend: ctx.addFriend,
+        removeFriend: ctx.removeFriend,
         refreshFriends: ctx.refreshFriends
     };
 }

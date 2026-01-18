@@ -1,11 +1,12 @@
 /**
  * LikeButton
  * Heart button with animation for liking photos.
+ * Includes rate limiting to prevent spam.
  */
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import styles from './LikeButton.module.css';
 
 interface LikeButtonProps {
@@ -15,10 +16,14 @@ interface LikeButtonProps {
     disabled?: boolean;
 }
 
+const RATE_LIMIT_MS = 1000; // 1 second cooldown between likes
+
 export default function LikeButton({ isLiked, count, onToggle, disabled = false }: LikeButtonProps) {
     const [isAnimating, setIsAnimating] = useState(false);
     const [optimisticLiked, setOptimisticLiked] = useState(isLiked);
     const [optimisticCount, setOptimisticCount] = useState(count);
+    const [isPending, setIsPending] = useState(false);
+    const lastClickRef = useRef<number>(0);
 
     // Sync with prop changes
     React.useEffect(() => {
@@ -27,11 +32,19 @@ export default function LikeButton({ isLiked, count, onToggle, disabled = false 
     }, [isLiked, count]);
 
     const handleClick = async () => {
-        if (disabled) return;
+        if (disabled || isPending) return;
+
+        // Rate limit check
+        const now = Date.now();
+        if (now - lastClickRef.current < RATE_LIMIT_MS) {
+            return; // Ignore rapid clicks
+        }
+        lastClickRef.current = now;
 
         // Optimistic update
         setOptimisticLiked(!optimisticLiked);
         setOptimisticCount(prev => optimisticLiked ? prev - 1 : prev + 1);
+        setIsPending(true);
 
         // Animation
         setIsAnimating(true);
@@ -43,6 +56,8 @@ export default function LikeButton({ isLiked, count, onToggle, disabled = false 
             // Revert on error
             setOptimisticLiked(isLiked);
             setOptimisticCount(count);
+        } finally {
+            setIsPending(false);
         }
     };
 
@@ -50,7 +65,7 @@ export default function LikeButton({ isLiked, count, onToggle, disabled = false 
         <button
             className={`${styles.button} ${optimisticLiked ? styles.liked : ''} ${isAnimating ? styles.animating : ''}`}
             onClick={handleClick}
-            disabled={disabled}
+            disabled={disabled || isPending}
             aria-label={optimisticLiked ? 'Unlike' : 'Like'}
         >
             <span className={styles.heart}>
@@ -62,3 +77,4 @@ export default function LikeButton({ isLiked, count, onToggle, disabled = false 
         </button>
     );
 }
+

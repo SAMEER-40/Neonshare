@@ -214,7 +214,7 @@ export async function restorePhoto(photoId: string): Promise<boolean> {
  * Permanently delete a photo from Firestore
  * Note: Cloudinary deletion requires API secret (server-side only)
  */
-export async function permanentlyDeletePhoto(photoId: string, uploader: string): Promise<boolean> {
+export async function permanentlyDeletePhoto(photoId: string): Promise<boolean> {
     try {
         // Delete from Firestore only (Cloudinary deletion needs server-side API)
         await deleteDoc(doc(db, 'photos', photoId));

@@ -5,7 +5,7 @@
  */
 
 import { db } from '../firebase';
-import { doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where, setDoc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore';
 
 // Types
 export interface User {
@@ -53,6 +53,51 @@ function deduplicateRequest<T>(key: string, fetcher: () => Promise<T>): Promise<
 function isCacheValid<T>(entry: CacheEntry<T> | null): boolean {
     if (!entry) return false;
     return Date.now() - entry.timestamp < CACHE_TTL;
+}
+
+// ============== VALIDATION & SECURITY ==============
+
+/**
+ * Hash password using SHA-256
+ */
+async function hashPassword(password: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Validate username format
+ */
+export function validateUsername(username: string): { valid: boolean; error?: string } {
+    const trimmed = username.trim().toLowerCase();
+
+    if (trimmed.length < 3) {
+        return { valid: false, error: 'Username must be at least 3 characters' };
+    }
+    if (trimmed.length > 20) {
+        return { valid: false, error: 'Username must be 20 characters or less' };
+    }
+    if (!/^[a-z0-9_]+$/.test(trimmed)) {
+        return { valid: false, error: 'Username can only contain letters, numbers, and underscores' };
+    }
+
+    const reserved = ['admin', 'root', 'system', 'moderator', 'mod', 'null', 'undefined'];
+    if (reserved.includes(trimmed)) {
+        return { valid: false, error: 'This username is reserved' };
+    }
+
+    return { valid: true };
+}
+
+/**
+ * Verify password against stored hash
+ */
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+    const inputHash = await hashPassword(password);
+    return inputHash === storedHash;
 }
 
 // ============== READ OPERATIONS (Cached) ==============
@@ -148,17 +193,36 @@ export async function getFriends(username: string): Promise<string[]> {
  */
 export async function registerUser(user: User): Promise<{ success: boolean; message?: string }> {
     try {
-        // Check existence with getDoc (not getAllUsers)
-        const existing = await getUserByUsername(user.username);
+        // Validate username
+        const validation = validateUsername(user.username);
+        if (!validation.valid) {
+            return { success: false, message: validation.error };
+        }
+
+        const normalizedUsername = user.username.trim().toLowerCase();
+
+        // Check existence
+        const existing = await getUserByUsername(normalizedUsername);
         if (existing) {
             return { success: false, message: 'Username already exists' };
         }
 
-        await setDoc(doc(db, 'users', user.username), user);
+        // Hash password if provided
+        const hashedPassword = user.password ? await hashPassword(user.password) : null;
 
-        // Invalidate cache
-        userCache.set(user.username, { data: user, timestamp: Date.now() });
-        allUsersCacheRef = { data: [], timestamp: 0 }; // Invalidate all users cache
+        // Build user object - Firestore doesn't accept undefined values
+        const userToSave: User = {
+            username: normalizedUsername,
+            friends: user.friends || [],
+            ...(hashedPassword && { password: hashedPassword }),
+            ...(user.googleId && { googleId: user.googleId })
+        };
+
+        await setDoc(doc(db, 'users', normalizedUsername), userToSave);
+
+        // Update cache
+        userCache.set(normalizedUsername, { data: userToSave, timestamp: Date.now() });
+        allUsersCacheRef = { data: [], timestamp: 0 };
 
         return { success: true };
     } catch (error: any) {
@@ -168,7 +232,7 @@ export async function registerUser(user: User): Promise<{ success: boolean; mess
 }
 
 /**
- * Add a friend (bidirectional)
+ * Add a friend (bidirectional, atomic)
  */
 export async function addFriend(currentUsername: string, targetUsername: string): Promise<boolean> {
     try {
@@ -176,12 +240,18 @@ export async function addFriend(currentUsername: string, targetUsername: string)
         const targetUser = await getUserByUsername(targetUsername);
         if (!targetUser) return false;
 
-        await updateDoc(doc(db, 'users', currentUsername), {
+        // Prevent self-friending
+        if (currentUsername === targetUsername) return false;
+
+        // Use batch write for atomicity
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'users', currentUsername), {
             friends: arrayUnion(targetUsername)
         });
-        await updateDoc(doc(db, 'users', targetUsername), {
+        batch.update(doc(db, 'users', targetUsername), {
             friends: arrayUnion(currentUsername)
         });
+        await batch.commit();
 
         // Invalidate both users' cache
         userCache.delete(currentUsername);
@@ -190,6 +260,34 @@ export async function addFriend(currentUsername: string, targetUsername: string)
         return true;
     } catch (error) {
         console.error('Error adding friend:', error);
+        return false;
+    }
+}
+
+/**
+ * Remove a friend (bidirectional, atomic)
+ */
+export async function removeFriend(currentUsername: string, targetUsername: string): Promise<boolean> {
+    try {
+        const { arrayRemove } = await import('firebase/firestore');
+
+        // Use batch write for atomicity
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'users', currentUsername), {
+            friends: arrayRemove(targetUsername)
+        });
+        batch.update(doc(db, 'users', targetUsername), {
+            friends: arrayRemove(currentUsername)
+        });
+        await batch.commit();
+
+        // Invalidate both users' cache
+        userCache.delete(currentUsername);
+        userCache.delete(targetUsername);
+
+        return true;
+    } catch (error) {
+        console.error('Error removing friend:', error);
         return false;
     }
 }
