@@ -6,7 +6,7 @@ import PhotoSkeleton from './PhotoSkeleton';
 import Lightbox from './Lightbox';
 import LikeButton from './LikeButton';
 import EditTagsModal from './EditTagsModal';
-import { getVisiblePhotos, subscribeToPhotoUpdates, Photo, invalidatePhotoCache } from '@/lib/data/photo.store';
+import { getVisiblePhotos, subscribeToPhotoUpdates, Photo, invalidatePhotoCache, searchPhotos } from '@/lib/data/photo.store';
 import { softDeletePhoto, restorePhoto, permanentlyDeletePhoto } from '@/lib/data/media.store';
 import { toggleLike, loadReactionsForPhotos } from '@/lib/data/reaction.store';
 import { useAuthStatus } from '@/lib/AuthProvider';
@@ -22,7 +22,11 @@ interface PhotoReaction {
     isLiked: boolean;
 }
 
-export default function PhotoFeed() {
+interface PhotoFeedProps {
+    searchQuery?: string;
+}
+
+export default function PhotoFeed({ searchQuery = '' }: PhotoFeedProps) {
     const { user } = useAuthStatus();
     const { showToast } = useToast();
     const [photos, setPhotos] = useState<Photo[]>([]);
@@ -95,7 +99,7 @@ export default function PhotoFeed() {
         }
 
         const timeoutId = setTimeout(async () => {
-            await permanentlyDeletePhoto(photo.id, photo.uploader);
+            await permanentlyDeletePhoto(photo.id);
             setDeletedPhotos(prev => {
                 const updated = new Map(prev);
                 updated.delete(photo.id);
@@ -231,90 +235,103 @@ export default function PhotoFeed() {
                 </button>
             </div>
             <div className={styles.grid}>
-                {photos.map((photo, index) => {
-                    const reaction = reactions.get(photo.id) || { count: 0, isLiked: false };
-
-                    return (
-                        <div key={photo.id} className={styles.card}>
-                            <div
-                                className={styles.imageContainer}
-                                onClick={() => handleDoubleTap(photo)}
-                            >
-                                {!loadedImages.has(photo.id) && (
-                                    <div className={styles.imagePlaceholder} />
-                                )}
-                                <img
-                                    src={photo.url}
-                                    alt="Shared memory"
-                                    className={`${styles.image} ${loadedImages.has(photo.id) ? styles.imageLoaded : styles.imageLoading}`}
-                                    loading="lazy"
-                                    onLoad={() => handleImageLoad(photo.id)}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        openLightbox(index);
-                                    }}
-                                    style={{ cursor: 'zoom-in' }}
-                                />
-
-                                {/* Action buttons (owner only) */}
-                                {photo.uploader === user && (
-                                    <div className={styles.cardActions}>
-                                        <button
-                                            className={styles.editBtn}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openEditTags(photo);
-                                            }}
-                                            aria-label="Edit tags"
-                                            title="Edit tags"
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            className={styles.deleteBtn}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(photo);
-                                            }}
-                                            aria-label="Delete photo"
-                                            title="Delete"
-                                        >
-                                            🗑️
-                                        </button>
-                                    </div>
-                                )}
+                {(() => {
+                    const filteredPhotos = searchPhotos(photos, searchQuery);
+                    if (filteredPhotos.length === 0 && searchQuery) {
+                        return (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyIcon}>🔍</div>
+                                <h3>No results found</h3>
+                                <p>No photos match "{searchQuery}"</p>
                             </div>
-                            <div className={styles.info}>
-                                <div className={styles.meta}>
-                                    <span className={styles.uploader}>@{photo.uploader}</span>
-                                    <span className={styles.date}>
-                                        {new Date(photo.timestamp).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <div className={styles.actions}>
-                                    <LikeButton
-                                        isLiked={reaction.isLiked}
-                                        count={reaction.count}
-                                        onToggle={() => handleLike(photo.id)}
+                        );
+                    }
+                    return filteredPhotos.map((photo, index) => {
+                        const reaction = reactions.get(photo.id) || { count: 0, isLiked: false };
+
+                        return (
+                            <div key={photo.id} className={styles.card}>
+                                <div
+                                    className={styles.imageContainer}
+                                    onClick={() => handleDoubleTap(photo)}
+                                >
+                                    {!loadedImages.has(photo.id) && (
+                                        <div className={styles.imagePlaceholder} />
+                                    )}
+                                    <img
+                                        src={photo.url}
+                                        alt="Shared memory"
+                                        className={`${styles.image} ${loadedImages.has(photo.id) ? styles.imageLoaded : styles.imageLoading}`}
+                                        loading="lazy"
+                                        onLoad={() => handleImageLoad(photo.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openLightbox(index);
+                                        }}
+                                        style={{ cursor: 'zoom-in' }}
                                     />
+
+                                    {/* Action buttons (owner only) */}
+                                    {photo.uploader === user && (
+                                        <div className={styles.cardActions}>
+                                            <button
+                                                className={styles.editBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEditTags(photo);
+                                                }}
+                                                aria-label="Edit tags"
+                                                title="Edit tags"
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
+                                                className={styles.deleteBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(photo);
+                                                }}
+                                                aria-label="Delete photo"
+                                                title="Delete"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                                {photo.tags.length > 0 && (
-                                    <div className={styles.tags}>
-                                        {photo.tags.map(tag => (
-                                            <span key={tag} className={styles.tag}>@{tag}</span>
-                                        ))}
+                                <div className={styles.info}>
+                                    <div className={styles.meta}>
+                                        <span className={styles.uploader}>@{photo.uploader}</span>
+                                        <span className={styles.date}>
+                                            {new Date(photo.timestamp).toLocaleDateString()}
+                                        </span>
                                     </div>
-                                )}
+                                    <div className={styles.actions}>
+                                        <LikeButton
+                                            isLiked={reaction.isLiked}
+                                            count={reaction.count}
+                                            onToggle={() => handleLike(photo.id)}
+                                        />
+                                    </div>
+                                    {photo.tags.length > 0 && (
+                                        <div className={styles.tags}>
+                                            {photo.tags.map(tag => (
+                                                <span key={tag} className={styles.tag}>@{tag}</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    });
+                })()}
             </div>
 
             {/* Lightbox */}
             <Lightbox
                 isOpen={lightboxOpen}
                 imageUrl={photos[lightboxIndex]?.url || ''}
+                photoId={photos[lightboxIndex]?.id || ''}
                 onClose={() => setLightboxOpen(false)}
                 onPrev={() => setLightboxIndex(i => Math.max(0, i - 1))}
                 onNext={() => setLightboxIndex(i => Math.min(photos.length - 1, i + 1))}
@@ -336,3 +353,4 @@ export default function PhotoFeed() {
         </div>
     );
 }
+

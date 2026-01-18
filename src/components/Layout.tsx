@@ -30,7 +30,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className={styles.container}>
             <header className={styles.header}>
                 <Link
-                    href="/"
+                    href="/home"
                     className={styles.logo}
                     onMouseEnter={handleFeedHover}
                     prefetch={true}
@@ -45,6 +45,13 @@ export default function Layout({ children }: LayoutProps) {
                             prefetch={true}
                         >
                             Friends
+                        </Link>
+                        <Link
+                            href="/profile"
+                            className={styles.navLink}
+                            prefetch={true}
+                        >
+                            Profile
                         </Link>
                         <span className={styles.username}>
                             Welcome, <strong>@{user}</strong>
