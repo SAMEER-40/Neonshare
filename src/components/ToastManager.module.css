@@ -24,6 +24,7 @@
     pointer-events: auto;
     animation: slideIn 0.3s ease-out;
     max-width: 400px;
+    overflow: hidden;
 }
 
 @keyframes slideIn {
@@ -56,9 +57,11 @@
 
 .message {
     flex: 1;
+    min-width: 0;
     color: #fff;
     font-size: 0.9rem;
     line-height: 1.4;
+    word-break: break-word;
 }
 
 .action {

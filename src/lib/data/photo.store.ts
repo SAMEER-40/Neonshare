@@ -89,6 +89,22 @@ export async function getVisiblePhotos(username: string): Promise<Photo[]> {
 }
 
 /**
+ * Search photos by uploader or tag
+ */
+export function searchPhotos(photos: Photo[], query: string): Photo[] {
+    const normalizedQuery = query.toLowerCase().trim().replace(/^@/, '');
+    if (!normalizedQuery) return photos;
+
+    return photos.filter(photo => {
+        // Match uploader
+        if (photo.uploader.toLowerCase().includes(normalizedQuery)) return true;
+        // Match any tag
+        if (photo.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))) return true;
+        return false;
+    });
+}
+
+/**
  * Paginated photo fetch (for infinite scroll)
  */
 let lastDoc: DocumentSnapshot | null = null;

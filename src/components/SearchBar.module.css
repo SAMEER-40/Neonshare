@@ -1,0 +1,59 @@
+.container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    margin-bottom: 1.5rem;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 14px;
+    font-size: 1rem;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.input {
+    width: 100%;
+    padding: 12px 40px 12px 44px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #a78bfa;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
+.input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.clearBtn {
+    position: absolute;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.clearBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}

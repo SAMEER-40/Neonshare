@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "capture-c1507",
     "public": "out",
     "ignore": [
       "firebase.json",
