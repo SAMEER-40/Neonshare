@@ -142,6 +142,7 @@
     flex-direction: column;
     gap: 0.75rem;
     max-height: 400px;
+    overflow-x: hidden;
     overflow-y: auto;
 }
 
@@ -203,4 +204,30 @@
 .name {
     font-weight: 500;
     color: var(--text-primary, #fff);
+    flex: 1;
+}
+
+.removeBtn {
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 0.8rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+}
+
+.friendItem:hover .removeBtn {
+    opacity: 1;
+}
+
+.removeBtn:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.removeBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

@@ -10,11 +10,12 @@ import { useToast } from '@/components/ToastManager';
 
 export default function FriendsPage() {
     const { user, friends, authStatus } = useAuthStatus();
-    const { addFriend } = useAuthActions();
+    const { addFriend, removeFriend } = useAuthActions();
     const { showToast } = useToast();
     const [newFriend, setNewFriend] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [removingFriend, setRemovingFriend] = useState<string | null>(null);
     const router = useRouter();
 
     // Filter friends based on search
@@ -46,6 +47,20 @@ export default function FriendsPage() {
             showToast({ type: 'error', message: `User @${newFriend} not found.` });
         }
         setIsAdding(false);
+    };
+
+    const handleRemoveFriend = async (friendUsername: string) => {
+        if (removingFriend) return;
+
+        if (!confirm(`Remove @${friendUsername} from friends?`)) return;
+
+        setRemovingFriend(friendUsername);
+        if (await removeFriend(friendUsername)) {
+            showToast({ type: 'success', message: `Removed @${friendUsername}` });
+        } else {
+            showToast({ type: 'error', message: 'Failed to remove friend' });
+        }
+        setRemovingFriend(null);
     };
 
     if (authStatus === 'loading') {
@@ -126,6 +141,13 @@ export default function FriendsPage() {
                                             {friend[0].toUpperCase()}
                                         </div>
                                         <span className={styles.name}>@{friend}</span>
+                                        <button
+                                            className={styles.removeBtn}
+                                            onClick={() => handleRemoveFriend(friend)}
+                                            disabled={removingFriend === friend}
+                                        >
+                                            {removingFriend === friend ? '...' : 'Remove'}
+                                        </button>
                                     </div>
                                 ))
                             )}
