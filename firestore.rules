@@ -31,9 +31,14 @@ service cloud.firestore {
                        request.resource.data.timestamp is number;
       
       // Only uploader can update/delete
+      // Note: With custom username auth (anonymous Firebase Auth), we store the
+      // uploader username in the document. We use request.auth.token.name to
+      // match against it. If migrating to Firebase Auth email/password, update
+      // to use request.auth.uid instead.
       allow update: if request.auth != null && 
                        resource.data.uploader == request.resource.data.uploader;
-      allow delete: if request.auth != null;
+      allow delete: if request.auth != null &&
+                       resource.data.uploader == request.auth.token.name;
       
       // Reactions subcollection
       match /reactions/{reactionId} {
