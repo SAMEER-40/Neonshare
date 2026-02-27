@@ -9,6 +9,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import styles from './Lightbox.module.css';
 import Comments from './Comments';
 import { useToast } from './ToastManager';
+import { getLightboxUrl } from '@/lib/data/media.store';
 
 interface LightboxProps {
     isOpen: boolean;
@@ -112,7 +113,13 @@ export default function Lightbox({
 
     return (
         <div className={styles.overlay} onClick={onClose}>
-            <div className={`${styles.container} ${showSidebar ? styles.withSidebar : ''}`} onClick={e => e.stopPropagation()}>
+            <div
+                className={`${styles.container} ${showSidebar ? styles.withSidebar : ''}`}
+                onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Photo viewer"
+            >
                 {/* Close button */}
                 <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
                     ✕
@@ -143,7 +150,7 @@ export default function Lightbox({
                     {/* Image */}
                     <div className={styles.imageWrapper}>
                         <img
-                            src={imageUrl}
+                            src={getLightboxUrl(imageUrl)}
                             alt={alt}
                             className={styles.image}
                             onClick={e => e.stopPropagation()}

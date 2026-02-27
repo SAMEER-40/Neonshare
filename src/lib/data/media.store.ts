@@ -224,3 +224,100 @@ export async function permanentlyDeletePhoto(photoId: string): Promise<boolean> 
         return false;
     }
 }
+
+// ============== CLOUDINARY URL TRANSFORMS ==============
+
+type ImageFormat = 'auto' | 'webp' | 'avif' | 'jpg';
+
+interface TransformOptions {
+    width?: number;
+    height?: number;
+    quality?: number | 'auto';
+    format?: ImageFormat;
+    crop?: 'fill' | 'fit' | 'limit' | 'scale' | 'thumb';
+    gravity?: 'auto' | 'face' | 'center';
+    blur?: number;
+    dpr?: number;
+}
+
+/**
+ * Generate an optimized Cloudinary URL with transforms.
+ * Inserts transform params before the version segment in the URL.
+ *
+ * @example
+ * getOptimizedUrl(url, { width: 400, quality: 'auto', format: 'auto' })
+ */
+export function getOptimizedUrl(originalUrl: string, options: TransformOptions = {}): string {
+    // Only transform Cloudinary URLs
+    if (!originalUrl.includes('res.cloudinary.com')) {
+        return originalUrl;
+    }
+
+    const parts: string[] = [];
+
+    if (options.width) parts.push(`w_${options.width}`);
+    if (options.height) parts.push(`h_${options.height}`);
+    if (options.quality) parts.push(`q_${options.quality}`);
+    if (options.format) parts.push(`f_${options.format}`);
+    if (options.crop) parts.push(`c_${options.crop}`);
+    if (options.gravity) parts.push(`g_${options.gravity}`);
+    if (options.blur) parts.push(`e_blur:${options.blur}`);
+    if (options.dpr) parts.push(`dpr_${options.dpr}`);
+
+    if (parts.length === 0) return originalUrl;
+
+    const transform = parts.join(',');
+
+    // Insert transform after /upload/ in the URL
+    return originalUrl.replace('/upload/', `/upload/${transform}/`);
+}
+
+/**
+ * Preset: Thumbnail for photo grid (400px wide, auto quality, webp)
+ */
+export function getThumbnailUrl(originalUrl: string): string {
+    return getOptimizedUrl(originalUrl, {
+        width: 400,
+        quality: 'auto',
+        format: 'auto',
+        crop: 'fill',
+        gravity: 'auto',
+    });
+}
+
+/**
+ * Preset: Medium size for feed display (800px wide)
+ */
+export function getFeedUrl(originalUrl: string): string {
+    return getOptimizedUrl(originalUrl, {
+        width: 800,
+        quality: 'auto',
+        format: 'auto',
+        crop: 'limit',
+    });
+}
+
+/**
+ * Preset: Full resolution for lightbox (1600px wide)
+ */
+export function getLightboxUrl(originalUrl: string): string {
+    return getOptimizedUrl(originalUrl, {
+        width: 1600,
+        quality: 'auto',
+        format: 'auto',
+        crop: 'limit',
+    });
+}
+
+/**
+ * Preset: Low-quality placeholder for blur-up effect (20px wide, heavy blur)
+ */
+export function getPlaceholderUrl(originalUrl: string): string {
+    return getOptimizedUrl(originalUrl, {
+        width: 20,
+        quality: 30,
+        format: 'auto',
+        blur: 1000,
+        crop: 'limit',
+    });
+}

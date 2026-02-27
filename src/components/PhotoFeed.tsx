@@ -7,7 +7,7 @@ import Lightbox from './Lightbox';
 import LikeButton from './LikeButton';
 import EditTagsModal from './EditTagsModal';
 import { getVisiblePhotos, subscribeToPhotoUpdates, Photo, invalidatePhotoCache, searchPhotos } from '@/lib/data/photo.store';
-import { softDeletePhoto, restorePhoto, permanentlyDeletePhoto } from '@/lib/data/media.store';
+import { softDeletePhoto, restorePhoto, permanentlyDeletePhoto, getFeedUrl, getPlaceholderUrl } from '@/lib/data/media.store';
 import { toggleLike, loadReactionsForPhotos } from '@/lib/data/reaction.store';
 import { useAuthStatus } from '@/lib/AuthProvider';
 import { useToast } from './ToastManager';
@@ -211,7 +211,7 @@ export default function PhotoFeed({ searchQuery = '' }: PhotoFeedProps) {
             <div className={styles.container}>
                 <div className={styles.header}>
                     <h2 className={styles.feedTitle}>Your Feed</h2>
-                    <button className={styles.refreshBtn} onClick={handleRefresh}>
+                    <button className={styles.refreshBtn} onClick={handleRefresh} aria-label="Refresh feed">
                         ↻ Refresh
                     </button>
                 </div>
@@ -254,13 +254,23 @@ export default function PhotoFeed({ searchQuery = '' }: PhotoFeedProps) {
                                 <div
                                     className={styles.imageContainer}
                                     onClick={() => handleDoubleTap(photo)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') openLightbox(index); }}
+                                    aria-label={`View photo by @${photo.uploader}`}
                                 >
                                     {!loadedImages.has(photo.id) && (
-                                        <div className={styles.imagePlaceholder} />
+                                        <div
+                                            className={styles.imagePlaceholder}
+                                            style={{
+                                                backgroundImage: `url(${getPlaceholderUrl(photo.url)})`,
+                                                backgroundSize: 'cover',
+                                            }}
+                                        />
                                     )}
                                     <img
-                                        src={photo.url}
-                                        alt="Shared memory"
+                                        src={getFeedUrl(photo.url)}
+                                        alt={`Photo by @${photo.uploader} on ${new Date(photo.timestamp).toLocaleDateString()}`}
                                         className={`${styles.image} ${loadedImages.has(photo.id) ? styles.imageLoaded : styles.imageLoading}`}
                                         loading="lazy"
                                         onLoad={() => handleImageLoad(photo.id)}
