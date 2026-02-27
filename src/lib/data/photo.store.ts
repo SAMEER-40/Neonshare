@@ -57,13 +57,14 @@ function isCacheValid<T>(entry: CacheEntry<T> | null): boolean {
  * Get all photos (cached)
  */
 export async function getAllPhotos(): Promise<Photo[]> {
+    if (!db) return [];
     if (isCacheValid(photosCache)) {
         return photosCache!.data;
     }
 
     return deduplicateRequest('allPhotos', async () => {
         try {
-            const snapshot = await getDocs(collection(db, 'photos'));
+            const snapshot = await getDocs(collection(db as any, 'photos'));
             const photos = snapshot.docs
                 .map(d => d.data() as Photo)
                 .sort((a, b) => b.timestamp - a.timestamp);
@@ -110,11 +111,12 @@ export function searchPhotos(photos: Photo[], query: string): Photo[] {
 let lastDoc: DocumentSnapshot | null = null;
 
 export async function getPhotosPaginated(reset: boolean = false): Promise<Photo[]> {
+    if (!db) return [];
     if (reset) lastDoc = null;
 
     try {
         let q = query(
-            collection(db, 'photos'),
+            collection(db as any, 'photos'),
             orderBy('timestamp', 'desc'),
             limit(PAGE_SIZE)
         );
@@ -141,8 +143,9 @@ export async function getPhotosPaginated(reset: boolean = false): Promise<Photo[
  * Save a new photo
  */
 export async function savePhoto(photo: Photo): Promise<boolean> {
+    if (!db) return false;
     try {
-        await setDoc(doc(db, 'photos', photo.id), photo);
+        await setDoc(doc(db as any, 'photos', photo.id), photo);
 
         // Invalidate cache
         photosCache = null;

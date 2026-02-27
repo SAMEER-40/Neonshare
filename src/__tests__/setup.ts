@@ -8,6 +8,7 @@ vi.mock('@/lib/firebase', () => ({
     storage: {},
     googleProvider: {},
     analytics: undefined,
+    hasFirebaseConfig: true,
 }));
 
 // Mock CSS modules — returns class names as-is

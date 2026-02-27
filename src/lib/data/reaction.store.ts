@@ -22,7 +22,8 @@ const userReactionsCache = new Map<string, Set<string>>(); // userId -> Set of p
  * Toggle like on a photo
  */
 export async function toggleLike(photoId: string, userId: string): Promise<boolean> {
-    const reactionRef = doc(db, 'photos', photoId, 'reactions', userId);
+    if (!db) throw new Error('Firebase not configured');
+    const reactionRef = doc(db as any, 'photos', photoId, 'reactions', userId);
 
     try {
         // Check if already liked - check Firestore directly for accuracy
@@ -75,13 +76,14 @@ export async function toggleLike(photoId: string, userId: string): Promise<boole
  * Get reaction count for a photo
  */
 export async function getReactionCount(photoId: string): Promise<number> {
+    if (!db) return 0;
     // Check cache first
     if (reactionCountCache.has(photoId)) {
         return reactionCountCache.get(photoId)!;
     }
 
     try {
-        const q = query(collection(db, 'photos', photoId, 'reactions'));
+        const q = query(collection(db as any, 'photos', photoId, 'reactions'));
         const snapshot = await getDocs(q);
         const count = snapshot.size;
         reactionCountCache.set(photoId, count);
@@ -96,6 +98,7 @@ export async function getReactionCount(photoId: string): Promise<number> {
  * Check if user has liked a photo
  */
 export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
+    if (!db) return false;
     // Check cache first
     const userReactions = userReactionsCache.get(userId);
     if (userReactions) {
@@ -103,7 +106,7 @@ export async function hasUserLiked(photoId: string, userId: string): Promise<boo
     }
 
     try {
-        const q = query(collection(db, 'photos', photoId, 'reactions'));
+        const q = query(collection(db as any, 'photos', photoId, 'reactions'));
         const snapshot = await getDocs(q);
 
         // Build cache for this user
@@ -128,13 +131,14 @@ export async function loadReactionsForPhotos(
     photoIds: string[],
     userId: string
 ): Promise<Map<string, { count: number; isLiked: boolean }>> {
+    if (!db) return new Map();
     const results = new Map<string, { count: number; isLiked: boolean }>();
 
     // Load in parallel
     await Promise.all(
         photoIds.map(async (photoId) => {
             try {
-                const q = query(collection(db, 'photos', photoId, 'reactions'));
+                const q = query(collection(db as any, 'photos', photoId, 'reactions'));
                 const snapshot = await getDocs(q);
 
                 const count = snapshot.size;
@@ -186,7 +190,10 @@ export function subscribeToReactions(
     userId: string,
     callback: (data: { count: number; isLiked: boolean }) => void
 ): Unsubscribe {
-    const q = query(collection(db, 'photos', photoId, 'reactions'));
+    if (!db) {
+        return () => {};
+    }
+    const q = query(collection(db as any, 'photos', photoId, 'reactions'));
 
     return onSnapshot(q, (snapshot) => {
         const count = snapshot.size;

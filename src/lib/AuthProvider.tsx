@@ -112,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginWithGoogle = useCallback(async (): Promise<boolean> => {
         try {
             const { auth, googleProvider } = await import('./firebase');
+            if (!auth) return false;
             const { signInWithPopup } = await import('firebase/auth');
 
             const result = await signInWithPopup(auth, googleProvider);

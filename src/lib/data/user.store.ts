@@ -106,6 +106,7 @@ export async function verifyPassword(password: string, storedHash: string): Prom
  * Get a single user by username - uses getDoc for efficiency
  */
 export async function getUserByUsername(username: string): Promise<User | null> {
+    if (!db) return null;
     // Check cache first
     const cached = userCache.get(username);
     if (cached && isCacheValid(cached)) {
@@ -114,7 +115,7 @@ export async function getUserByUsername(username: string): Promise<User | null> 
 
     return deduplicateRequest(`user:${username}`, async () => {
         try {
-            const userDoc = await getDoc(doc(db, 'users', username));
+            const userDoc = await getDoc(doc(db as any, 'users', username));
             if (userDoc.exists()) {
                 const user = userDoc.data() as User;
                 userCache.set(username, { data: user, timestamp: Date.now() });
@@ -132,9 +133,10 @@ export async function getUserByUsername(username: string): Promise<User | null> 
  * Get user by Google ID
  */
 export async function getUserByGoogleId(googleId: string): Promise<User | null> {
+    if (!db) return null;
     return deduplicateRequest(`google:${googleId}`, async () => {
         try {
-            const q = query(collection(db, 'users'), where('googleId', '==', googleId));
+            const q = query(collection(db as any, 'users'), where('googleId', '==', googleId));
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
                 const user = snapshot.docs[0].data() as User;
@@ -153,13 +155,14 @@ export async function getUserByGoogleId(googleId: string): Promise<User | null> 
  * Get all users - cached with TTL
  */
 export async function getAllUsers(): Promise<User[]> {
+    if (!db) return [];
     if (isCacheValid(allUsersCacheRef)) {
         return allUsersCacheRef.data;
     }
 
     return deduplicateRequest('allUsers', async () => {
         try {
-            const snapshot = await getDocs(collection(db, 'users'));
+            const snapshot = await getDocs(collection(db as any, 'users'));
             const users = snapshot.docs.map(d => d.data() as User);
 
             // Update cache
@@ -192,6 +195,7 @@ export async function getFriends(username: string): Promise<string[]> {
  * Register a new user
  */
 export async function registerUser(user: User): Promise<{ success: boolean; message?: string }> {
+    if (!db) return { success: false, message: 'Firebase not configured' };
     try {
         // Validate username
         const validation = validateUsername(user.username);
@@ -218,7 +222,7 @@ export async function registerUser(user: User): Promise<{ success: boolean; mess
             ...(user.googleId && { googleId: user.googleId })
         };
 
-        await setDoc(doc(db, 'users', normalizedUsername), userToSave);
+        await setDoc(doc(db as any, 'users', normalizedUsername), userToSave);
 
         // Update cache
         userCache.set(normalizedUsername, { data: userToSave, timestamp: Date.now() });
@@ -235,6 +239,7 @@ export async function registerUser(user: User): Promise<{ success: boolean; mess
  * Add a friend (bidirectional, atomic)
  */
 export async function addFriend(currentUsername: string, targetUsername: string): Promise<boolean> {
+    if (!db) return false;
     try {
         // Verify target exists
         const targetUser = await getUserByUsername(targetUsername);
@@ -244,11 +249,11 @@ export async function addFriend(currentUsername: string, targetUsername: string)
         if (currentUsername === targetUsername) return false;
 
         // Use batch write for atomicity
-        const batch = writeBatch(db);
-        batch.update(doc(db, 'users', currentUsername), {
+        const batch = writeBatch(db as any);
+        batch.update(doc(db as any, 'users', currentUsername), {
             friends: arrayUnion(targetUsername)
         });
-        batch.update(doc(db, 'users', targetUsername), {
+        batch.update(doc(db as any, 'users', targetUsername), {
             friends: arrayUnion(currentUsername)
         });
         await batch.commit();
@@ -268,15 +273,16 @@ export async function addFriend(currentUsername: string, targetUsername: string)
  * Remove a friend (bidirectional, atomic)
  */
 export async function removeFriend(currentUsername: string, targetUsername: string): Promise<boolean> {
+    if (!db) return false;
     try {
         const { arrayRemove } = await import('firebase/firestore');
 
         // Use batch write for atomicity
-        const batch = writeBatch(db);
-        batch.update(doc(db, 'users', currentUsername), {
+        const batch = writeBatch(db as any);
+        batch.update(doc(db as any, 'users', currentUsername), {
             friends: arrayRemove(targetUsername)
         });
-        batch.update(doc(db, 'users', targetUsername), {
+        batch.update(doc(db as any, 'users', targetUsername), {
             friends: arrayRemove(currentUsername)
         });
         await batch.commit();

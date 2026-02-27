@@ -41,6 +41,7 @@ function isCacheValid(photoId: string): boolean {
  * Get all comments for a photo
  */
 export async function getComments(photoId: string): Promise<Comment[]> {
+    if (!db) return [];
     // Check cache
     if (isCacheValid(photoId)) {
         return commentsCache.get(photoId)!.data;
@@ -48,7 +49,7 @@ export async function getComments(photoId: string): Promise<Comment[]> {
 
     try {
         const q = query(
-            collection(db, 'photos', photoId, 'comments'),
+            collection(db as any, 'photos', photoId, 'comments'),
             orderBy('timestamp', 'asc')
         );
         const snapshot = await getDocs(q);
@@ -75,6 +76,7 @@ export async function addComment(
     userId: string,
     text: string
 ): Promise<Comment | null> {
+    if (!db) return null;
     const sanitizedText = sanitizeCommentText(text);
     if (!sanitizedText) return null;
 
@@ -88,7 +90,7 @@ export async function addComment(
     };
 
     try {
-        await setDoc(doc(db, 'photos', photoId, 'comments', commentId), comment);
+        await setDoc(doc(db as any, 'photos', photoId, 'comments', commentId), comment);
 
         // Invalidate cache
         commentsCache.delete(photoId);
@@ -113,8 +115,9 @@ export async function deleteComment(
     photoId: string,
     commentId: string
 ): Promise<boolean> {
+    if (!db) return false;
     try {
-        await deleteDoc(doc(db, 'photos', photoId, 'comments', commentId));
+        await deleteDoc(doc(db as any, 'photos', photoId, 'comments', commentId));
 
         // Invalidate cache
         commentsCache.delete(photoId);
@@ -146,8 +149,11 @@ export function subscribeToComments(
     photoId: string,
     callback: (comments: Comment[]) => void
 ): Unsubscribe {
+    if (!db) {
+        return () => {};
+    }
     const q = query(
-        collection(db, 'photos', photoId, 'comments'),
+        collection(db as any, 'photos', photoId, 'comments'),
         orderBy('timestamp', 'asc')
     );
 

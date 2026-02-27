@@ -55,6 +55,13 @@ export function uploadImage(
     onProgress?: (progress: UploadProgress) => void
 ): Promise<ImageRecord> {
     return new Promise(async (resolve, reject) => {
+        if (!db) {
+            const error = 'Firebase not configured. Missing NEXT_PUBLIC_FIREBASE_* env vars.';
+            console.error(error);
+            onProgress?.({ progress: 0, state: 'error', error });
+            reject(new Error(error));
+            return;
+        }
         // Validate
         const validation = validateImage(file);
         if (!validation.valid) {
@@ -113,7 +120,7 @@ export function uploadImage(
                         };
 
                         // Save to Firestore
-                        await setDoc(doc(db, 'photos', photoId), photoRecord);
+                        await setDoc(doc(db as any, 'photos', photoId), photoRecord);
                         console.log('Photo saved:', photoId);
 
                         onProgress?.({ progress: 100, state: 'success' });
@@ -160,8 +167,9 @@ export function uploadImage(
  * Update tags on a photo
  */
 export async function updatePhotoTags(photoId: string, newTags: string[]): Promise<boolean> {
+    if (!db) return false;
     try {
-        await updateDoc(doc(db, 'photos', photoId), { tags: newTags });
+        await updateDoc(doc(db as any, 'photos', photoId), { tags: newTags });
 
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('photoUpdated', { detail: { photoId, tags: newTags } }));
@@ -178,8 +186,9 @@ export async function updatePhotoTags(photoId: string, newTags: string[]): Promi
  * Soft delete a photo (mark as deleted, keep for undo window)
  */
 export async function softDeletePhoto(photoId: string): Promise<boolean> {
+    if (!db) return false;
     try {
-        await updateDoc(doc(db, 'photos', photoId), { deleted: true });
+        await updateDoc(doc(db as any, 'photos', photoId), { deleted: true });
 
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('photoDeleted', { detail: { photoId } }));
@@ -196,8 +205,9 @@ export async function softDeletePhoto(photoId: string): Promise<boolean> {
  * Restore a soft-deleted photo (undo)
  */
 export async function restorePhoto(photoId: string): Promise<boolean> {
+    if (!db) return false;
     try {
-        await updateDoc(doc(db, 'photos', photoId), { deleted: false });
+        await updateDoc(doc(db as any, 'photos', photoId), { deleted: false });
 
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('photoRestored', { detail: { photoId } }));
@@ -215,9 +225,10 @@ export async function restorePhoto(photoId: string): Promise<boolean> {
  * Note: Cloudinary deletion requires API secret (server-side only)
  */
 export async function permanentlyDeletePhoto(photoId: string): Promise<boolean> {
+    if (!db) return false;
     try {
         // Delete from Firestore only (Cloudinary deletion needs server-side API)
-        await deleteDoc(doc(db, 'photos', photoId));
+        await deleteDoc(doc(db as any, 'photos', photoId));
         return true;
     } catch (error) {
         console.error('Error deleting photo:', error);

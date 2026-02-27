@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { ToastProvider } from "@/components/ToastManager";
 import OfflineIndicator from "@/components/OfflineIndicator";
@@ -10,18 +10,19 @@ export const metadata: Metadata = {
   title: "NeonShare - Photo Sharing",
   description: "Share your moments with friends",
   manifest: "/manifest.json",
-  themeColor: "#e8a87c",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "NeonShare",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#e8a87c",
 };
 
 export default function RootLayout({

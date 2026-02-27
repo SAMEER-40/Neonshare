@@ -14,16 +14,28 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+const isBrowser = typeof window !== 'undefined';
+const hasFirebaseConfig = Boolean(
+    firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId &&
+    firebaseConfig.storageBucket &&
+    firebaseConfig.messagingSenderId &&
+    firebaseConfig.appId
+);
+
+// Initialize Firebase only in the browser with valid config
+const app = (isBrowser && hasFirebaseConfig)
+    ? (!getApps().length ? initializeApp(firebaseConfig) : getApp())
+    : null;
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
+const storage = app ? getStorage(app) : null;
 const googleProvider = new GoogleAuthProvider();
 
 let analytics: any;
-if (typeof window !== 'undefined') {
+if (app && isBrowser) {
     isSupported().then(yes => yes && (analytics = getAnalytics(app)));
 }
 
-export { app, auth, db, storage, googleProvider, analytics };
+export { app, auth, db, storage, googleProvider, analytics, hasFirebaseConfig };
