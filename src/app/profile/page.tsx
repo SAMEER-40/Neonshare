@@ -71,6 +71,10 @@ export default function ProfilePage() {
                             <div
                                 className={`${styles.stat} ${styles.clickable}`}
                                 onClick={() => setShowFriendsModal(true)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowFriendsModal(true); } }}
+                                aria-label={`View friends (${friends.length})`}
                             >
                                 <span className={styles.statValue}>{friends.length}</span>
                                 <span className={styles.statLabel}>Friends</span>
@@ -108,10 +112,13 @@ export default function ProfilePage() {
                                     key={photo.id}
                                     className={styles.galleryItem}
                                     onClick={() => openLightbox(index)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(index); } }}
                                 >
                                     <img
                                         src={photo.url}
-                                        alt="Your photo"
+                                        alt={`Photo uploaded on ${new Date(photo.timestamp).toLocaleDateString()}`}
                                         className={styles.galleryImage}
                                         loading="lazy"
                                     />
@@ -141,12 +148,19 @@ export default function ProfilePage() {
                 {/* Friends Modal */}
                 {showFriendsModal && (
                     <div className={styles.modalOverlay} onClick={() => setShowFriendsModal(false)}>
-                        <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        <div
+                            className={styles.modal}
+                            onClick={e => e.stopPropagation()}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="friends-modal-title"
+                        >
                             <div className={styles.modalHeader}>
-                                <h2>Friends ({friends.length})</h2>
+                                <h2 id="friends-modal-title">Friends ({friends.length})</h2>
                                 <button
                                     className={styles.closeBtn}
                                     onClick={() => setShowFriendsModal(false)}
+                                    aria-label="Close friends modal"
                                 >
                                     ✕
                                 </button>

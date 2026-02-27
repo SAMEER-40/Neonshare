@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from './EditTagsModal.module.css';
 import { updatePhotoTags } from '@/lib/data/media.store';
 import { useAuthStatus } from '@/lib/AuthProvider';
@@ -38,6 +38,18 @@ export default function EditTagsModal({
         }
     }, [isOpen, currentTags]);
 
+    // Keyboard: Escape to close
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+    }, [onClose]);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, handleKeyDown]);
+
     if (!isOpen) return null;
 
     const toggleTag = (tag: string) => {
@@ -66,8 +78,14 @@ export default function EditTagsModal({
 
     return (
         <div className={styles.overlay} onClick={onClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <h2 className={styles.title}>Edit Tags</h2>
+            <div
+                className={styles.modal}
+                onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="edit-tags-title"
+            >
+                <h2 id="edit-tags-title" className={styles.title}>Edit Tags</h2>
 
                 <div className={styles.tagsContainer}>
                     {friends.length === 0 ? (
@@ -81,6 +99,7 @@ export default function EditTagsModal({
                                 className={`${styles.tagChip} ${selectedTags.includes(friend) ? styles.selected : ''}`}
                                 onClick={() => toggleTag(friend)}
                                 disabled={isSaving}
+                                aria-pressed={selectedTags.includes(friend)}
                             >
                                 @{friend}
                             </button>

@@ -32,14 +32,15 @@ export default function SearchBar({ onSearch, placeholder = 'Search by @username
     }, [onSearch]);
 
     return (
-        <div className={styles.container}>
-            <div className={styles.searchIcon}>🔍</div>
+        <div className={styles.container} role="search">
+            <div className={styles.searchIcon} aria-hidden="true">🔍</div>
             <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={placeholder}
                 className={styles.input}
+                aria-label="Search photos"
             />
             {query && (
                 <button

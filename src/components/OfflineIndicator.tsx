@@ -45,11 +45,15 @@ export default function OfflineIndicator() {
     if (!showBanner) return null;
 
     return (
-        <div className={`${styles.banner} ${isOnline ? styles.online : styles.offline}`}>
+        <div
+            className={`${styles.banner} ${isOnline ? styles.online : styles.offline}`}
+            role="alert"
+            aria-live="assertive"
+        >
             {isOnline ? (
                 <>✓ Back online</>
             ) : (
-                <>⚠️ You're offline. Some features may not work.</>
+                <>⚠️ You&#39;re offline. Some features may not work.</>
             )}
         </div>
     );

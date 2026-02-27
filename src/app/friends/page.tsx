@@ -89,6 +89,7 @@ export default function FriendsPage() {
                                 onChange={(e) => setNewFriend(e.target.value)}
                                 className={styles.input}
                                 disabled={isAdding}
+                                aria-label="Friend username"
                             />
                             <button type="submit" className={styles.addButton} disabled={isAdding || !newFriend.trim()}>
                                 {isAdding ? <span className="loading-spinner" /> : 'Add'}
@@ -106,18 +107,20 @@ export default function FriendsPage() {
 
                         {/* Search Filter */}
                         {friends.length > 3 && (
-                            <div className={styles.searchContainer}>
+                            <div className={styles.searchContainer} role="search">
                                 <input
                                     type="text"
                                     placeholder="Search friends..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className={styles.searchInput}
+                                    aria-label="Search friends"
                                 />
                                 {searchQuery && (
                                     <button
                                         className={styles.clearSearch}
                                         onClick={() => setSearchQuery('')}
+                                        aria-label="Clear search"
                                     >
                                         ×
                                     </button>

@@ -101,13 +101,23 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
 
     return (
         <div className={styles.overlay} onClick={handleClose}>
-            <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                <h2 className={styles.title}>Share a Photo</h2>
+            <div
+                className={styles.modal}
+                onClick={e => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="upload-title"
+            >
+                <h2 id="upload-title" className={styles.title}>Share a Photo</h2>
 
                 {!previewUrl ? (
                     <div
                         className={styles.dropzone}
                         onClick={() => fileInputRef.current?.click()}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Select a photo to upload"
                     >
                         <div className={styles.dropzoneIcon}>📷</div>
                         <p>Click to select a photo</p>
@@ -118,6 +128,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
                             onChange={handleFileSelect}
                             accept="image/jpeg,image/png,image/gif,image/webp"
                             hidden
+                            aria-label="Select a photo to upload"
                         />
                     </div>
                 ) : (
@@ -141,8 +152,13 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
                                 <div
                                     className={styles.progressBar}
                                     style={{ width: `${uploadProgress.progress}%` }}
+                                    role="progressbar"
+                                    aria-valuenow={uploadProgress.progress}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-label="Upload progress"
                                 />
-                                <span className={styles.progressText}>
+                                <span className={styles.progressText} aria-live="polite">
                                     Uploading... {Math.round(uploadProgress.progress)}%
                                 </span>
                             </div>
@@ -164,6 +180,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete }: Uploa
                                     className={`${styles.tagChip} ${selectedTags.includes(u) ? styles.selected : ''}`}
                                     onClick={() => toggleTag(u)}
                                     disabled={isUploading}
+                                    aria-pressed={selectedTags.includes(u)}
                                 >
                                     @{u}
                                 </button>

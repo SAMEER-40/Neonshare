@@ -68,8 +68,9 @@ export default function CompleteProfilePage() {
                     {error && <div className={styles.error}>{error}</div>}
 
                     <div className={styles.field}>
-                        <label className={styles.label}>Username</label>
+                        <label htmlFor="complete-profile-username" className={styles.label}>Username</label>
                         <input
+                            id="complete-profile-username"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
