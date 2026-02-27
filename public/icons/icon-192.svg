@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#1a1612"/>
+  <circle cx="96" cy="80" r="28" fill="none" stroke="#e8a87c" stroke-width="4"/>
+  <path d="M50 130 L96 60 L142 130 Z" fill="none" stroke="#e8a87c" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="130" cy="55" r="8" fill="#e8a87c" opacity="0.7"/>
+  <text x="96" y="170" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="700" font-size="22" fill="#e8a87c">NeonShare</text>
+</svg>
