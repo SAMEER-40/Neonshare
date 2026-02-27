@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './Comments.module.css';
-import { getComments, addComment, deleteComment, Comment } from '@/lib/data/comment.store';
+import { getComments, addComment, deleteComment, subscribeToComments, Comment } from '@/lib/data/comment.store';
 import { useAuthStatus } from '@/lib/AuthProvider';
 
 interface CommentsProps {
@@ -35,26 +35,17 @@ export default function Comments({ photoId }: CommentsProps) {
     }, [photoId]);
 
     useEffect(() => {
+        // Initial load
         loadComments();
 
-        // Listen for comment updates
-        const handleCommentAdded = (e: CustomEvent) => {
-            if (e.detail.photoId === photoId) {
-                loadComments();
-            }
-        };
-        const handleCommentDeleted = (e: CustomEvent) => {
-            if (e.detail.photoId === photoId) {
-                loadComments();
-            }
-        };
-
-        window.addEventListener('commentAdded', handleCommentAdded as EventListener);
-        window.addEventListener('commentDeleted', handleCommentDeleted as EventListener);
+        // Subscribe to real-time updates from other users
+        const unsubscribe = subscribeToComments(photoId, (updatedComments) => {
+            setComments(updatedComments);
+            setIsLoading(false);
+        });
 
         return () => {
-            window.removeEventListener('commentAdded', handleCommentAdded as EventListener);
-            window.removeEventListener('commentDeleted', handleCommentDeleted as EventListener);
+            unsubscribe();
         };
     }, [photoId, loadComments]);
 
@@ -113,6 +104,7 @@ export default function Comments({ photoId }: CommentsProps) {
                                     className={styles.deleteBtn}
                                     onClick={() => handleDelete(comment.id)}
                                     title="Delete comment"
+                                    aria-label="Delete comment"
                                 >
                                     ×
                                 </button>
@@ -132,6 +124,7 @@ export default function Comments({ photoId }: CommentsProps) {
                         className={styles.input}
                         disabled={isSubmitting}
                         maxLength={500}
+                        aria-label="Add a comment"
                     />
                     <button
                         type="submit"

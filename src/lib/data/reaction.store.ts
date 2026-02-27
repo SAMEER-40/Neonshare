@@ -4,7 +4,8 @@
  */
 
 import { db } from '../firebase';
-import { doc, setDoc, deleteDoc, collection, getDocs, query } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, collection, getDocs, query, onSnapshot } from 'firebase/firestore';
+import type { Unsubscribe } from 'firebase/firestore';
 
 export interface Reaction {
     photoId: string;
@@ -174,4 +175,38 @@ function dispatchReactionEvent(photoId: string, action: 'liked' | 'unliked') {
 export function clearReactionCache(): void {
     reactionCountCache.clear();
     userReactionsCache.clear();
+}
+
+/**
+ * Subscribe to real-time reaction updates for a photo.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToReactions(
+    photoId: string,
+    userId: string,
+    callback: (data: { count: number; isLiked: boolean }) => void
+): Unsubscribe {
+    const q = query(collection(db, 'photos', photoId, 'reactions'));
+
+    return onSnapshot(q, (snapshot) => {
+        const count = snapshot.size;
+        const isLiked = snapshot.docs.some(d => d.id === userId);
+
+        // Update caches
+        reactionCountCache.set(photoId, count);
+        if (isLiked) {
+            const userReactions = userReactionsCache.get(userId) || new Set();
+            userReactions.add(photoId);
+            userReactionsCache.set(userId, userReactions);
+        } else {
+            const userReactions = userReactionsCache.get(userId);
+            if (userReactions) {
+                userReactions.delete(photoId);
+            }
+        }
+
+        callback({ count, isLiked });
+    }, (error) => {
+        console.error('Real-time reactions listener error:', error);
+    });
 }

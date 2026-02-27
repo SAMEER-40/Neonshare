@@ -4,7 +4,8 @@
  */
 
 import { db } from '../firebase';
-import { doc, setDoc, deleteDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, collection, getDocs, query, orderBy, onSnapshot } from 'firebase/firestore';
+import type { Unsubscribe } from 'firebase/firestore';
 
 export interface Comment {
     id: string;
@@ -135,4 +136,32 @@ export async function deleteComment(
  */
 export function clearCommentsCache(): void {
     commentsCache.clear();
+}
+
+/**
+ * Subscribe to real-time comment updates for a photo.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToComments(
+    photoId: string,
+    callback: (comments: Comment[]) => void
+): Unsubscribe {
+    const q = query(
+        collection(db, 'photos', photoId, 'comments'),
+        orderBy('timestamp', 'asc')
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const comments = snapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        } as Comment));
+
+        // Update cache
+        commentsCache.set(photoId, { data: comments, timestamp: Date.now() });
+
+        callback(comments);
+    }, (error) => {
+        console.error('Real-time comments listener error:', error);
+    });
 }
