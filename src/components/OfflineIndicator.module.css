@@ -1,37 +1,33 @@
-/* OfflineIndicator styles */
+/* OfflineIndicator — Premium warm theme */
 
 .banner {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    padding: 12px 20px;
+    padding: 10px 20px;
     text-align: center;
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: var(--text-sm);
     z-index: 9999;
-    animation: slideDown 0.3s ease-out;
+    animation: slideDown 0.3s var(--ease-out);
+    letter-spacing: -0.01em;
 }
 
 @keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-    }
-
-    to {
-        transform: translateY(0);
-    }
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
 }
 
 .offline {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: var(--error);
     color: #fff;
 }
 
 .online {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+    background: var(--success);
     color: #fff;
-    animation: slideDown 0.3s ease-out, fadeOut 0.5s ease-out 2.5s forwards;
+    animation: slideDown 0.3s var(--ease-out), fadeOut 0.5s var(--ease-out) 2.5s forwards;
 }
 
 @keyframes fadeOut {

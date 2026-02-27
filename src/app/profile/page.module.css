@@ -1,33 +1,38 @@
+/* Profile page — Premium warm theme */
+
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1rem 0;
 }
 
 /* Profile Header */
 .header {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    padding: 2rem;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    border-radius: 16px;
+    gap: 1.75rem;
+    padding: 2rem 2.25rem;
+    background: var(--surface-raised);
+    border-radius: var(--radius-2xl);
     margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
 }
 
 .avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    width: 88px;
+    height: 88px;
+    border-radius: var(--radius-full);
+    background: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    color: white;
+    color: var(--linen);
     flex-shrink: 0;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.02em;
 }
 
 .info {
@@ -35,10 +40,12 @@
 }
 
 .username {
-    font-size: 1.75rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-2xl);
     font-weight: 700;
-    color: white;
+    color: var(--ink);
     margin: 0 0 0.75rem 0;
+    letter-spacing: -0.02em;
 }
 
 .stats {
@@ -53,48 +60,54 @@
 }
 
 .statValue {
-    font-size: 1.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-xl);
     font-weight: 700;
-    color: #a78bfa;
+    color: var(--ink);
 }
 
 .statLabel {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--text-xs);
+    color: var(--stone);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
 }
 
 .logoutBtn {
-    padding: 0.75rem 1.5rem;
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    color: #ef4444;
+    padding: 0.625rem 1.25rem;
+    background: transparent;
+    border: 1px solid rgba(212, 64, 64, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--error);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--duration-normal) var(--ease-out);
+    font-size: var(--text-sm);
 }
 
 .logoutBtn:hover {
-    background: rgba(239, 68, 68, 0.3);
-    transform: translateY(-2px);
+    background: rgba(212, 64, 64, 0.06);
+    border-color: rgba(212, 64, 64, 0.3);
+    transform: translateY(-1px);
 }
 
 /* Section */
 .section {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 16px;
-    padding: 1.5rem;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+    border: 1px solid var(--border);
 }
 
 .sectionTitle {
-    font-size: 1.1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-sm);
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--bark);
     margin: 0 0 1.5rem 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
 }
 
 /* Loading */
@@ -105,50 +118,52 @@
 }
 
 .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #a78bfa;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--gold);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 /* Empty State */
 .emptyState {
     text-align: center;
-    padding: 3rem;
+    padding: 3.5rem 2rem;
 }
 
 .emptyIcon {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
+    opacity: 0.7;
 }
 
 .emptyState p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--bark);
     margin-bottom: 1.5rem;
+    font-size: var(--text-base);
 }
 
 .uploadBtn {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--ink);
     border: none;
-    border-radius: 8px;
-    color: white;
+    border-radius: var(--radius-md);
+    color: var(--linen);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--duration-normal) var(--ease-out);
+    font-size: var(--text-sm);
 }
 
 .uploadBtn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
+    background: var(--ink-soft);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 /* Gallery */
@@ -161,37 +176,39 @@
 .galleryItem {
     position: relative;
     aspect-ratio: 1;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out);
 }
 
 .galleryItem:hover {
     transform: scale(1.02);
+    box-shadow: var(--shadow-md);
 }
 
 .galleryImage {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    transition: transform 0.4s var(--ease-out);
 }
 
 .galleryItem:hover .galleryImage {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
 .galleryOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    background: linear-gradient(to top, rgba(26, 26, 24, 0.5), transparent);
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--duration-normal) var(--ease-out);
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding: 0.5rem;
+    padding: 0.625rem;
 }
 
 .galleryItem:hover .galleryOverlay {
@@ -199,8 +216,9 @@
 }
 
 .photoDate {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: white;
+    font-weight: 500;
 }
 
 /* Responsive */
@@ -222,91 +240,84 @@
 /* Clickable stat */
 .clickable {
     cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
+    transition: transform var(--duration-normal) var(--ease-out),
+        background var(--duration-normal) var(--ease-out);
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .clickable:hover {
     transform: scale(1.05);
-    background: rgba(167, 139, 250, 0.1);
+    background: var(--gold-soft);
 }
 
 /* Friends Modal */
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(26, 26, 24, 0.4);
     backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn var(--duration-normal) var(--ease-out);
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0d0d1a 100%);
-    border-radius: 16px;
-    padding: 1.5rem;
+    background: var(--linen-soft);
+    border-radius: var(--radius-2xl);
+    padding: 1.75rem;
     width: 90%;
     max-width: 400px;
     max-height: 70vh;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-    animation: slideUp 0.3s ease-out;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-float);
+    animation: slideUp 0.3s var(--ease-out);
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modalHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border);
 }
 
 .modalHeader h2 {
     margin: 0;
-    font-size: 1.25rem;
-    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: var(--text-lg);
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .closeBtn {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 1.5rem;
+    color: var(--stone);
+    font-size: 1.25rem;
     cursor: pointer;
-    padding: 0;
+    padding: 4px;
     line-height: 1;
-    transition: color 0.2s;
+    transition: color var(--duration-fast);
+    border-radius: var(--radius-sm);
 }
 
 .closeBtn:hover {
-    color: #fff;
+    color: var(--ink);
 }
 
 .friendsList {
@@ -315,7 +326,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .friendItem {
@@ -323,56 +334,62 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    transition: background 0.2s;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    transition: background var(--duration-fast);
+    border: 1px solid transparent;
 }
 
 .friendItem:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--surface-raised);
+    border-color: var(--border);
 }
 
 .friendAvatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 1rem;
-    color: white;
+    font-size: var(--text-sm);
+    color: var(--linen);
     flex-shrink: 0;
+    font-family: 'Space Grotesk', sans-serif;
 }
 
 .friendName {
     font-weight: 500;
-    color: #a78bfa;
+    color: var(--ink);
+    font-size: var(--text-sm);
 }
 
 .noFriends {
     text-align: center;
     padding: 2rem 1rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--stone);
 }
 
 .noFriends p {
     margin-bottom: 1rem;
+    font-size: var(--text-base);
 }
 
 .addFriendsBtn {
     padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--ink);
     border: none;
-    border-radius: 8px;
-    color: white;
+    border-radius: var(--radius-md);
+    color: var(--linen);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--duration-normal) var(--ease-out);
+    font-size: var(--text-sm);
 }
 
 .addFriendsBtn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
+    background: var(--ink-soft);
+    transform: translateY(-1px);
 }
